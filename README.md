@@ -1,51 +1,119 @@
-# Fynd Storefront Commerce MCP Server
+# Fynd Commerce MCP
 
-AI assistants can seamlessly interact with Fynd Commerce storefronts through natural conversations using the **Model Context Protocol (MCP)**. This enables AI-powered commerce flows like product discovery, authentication, cart management, and COD order placement — all via structured MCP tools.
+A Model Context Protocol (MCP) server for the Fynd Commerce platform, enabling AI assistants to browse catalogs, authenticate users, manage carts, and place COD orders through natural conversation.
 
-## Quick Start
+---
 
-### 1. Generate Your Bearer Token
+## Tools (20)
 
-Combine your Fynd application ID and token, then Base64-encode them:
+### Catalog (4 tools)
 
-```bash
-echo -n "YOUR_APP_ID:YOUR_APP_TOKEN" | base64
+| Tool               | Description                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| `list_products`    | Search and list products with filters (query, price range, sort, stock, pagination) |
+| `get_product`      | Get detailed product info by slug — prices, media, available sizes                  |
+| `list_collections` | Browse product collections with pagination                                          |
+| `get_collection`   | Get collection details and its products                                             |
+
+**Sort options:** latest, price_asc, price_dsc, popularity, discount_dsc, rating_dsc
+
+### Authentication (4 tools)
+
+| Tool                 | Description                                                       |
+| -------------------- | ----------------------------------------------------------------- |
+| `send_login_otp`     | Send OTP to mobile number (rate limited: 3 per mobile per 15 min) |
+| `verify_login_otp`   | Verify OTP and establish authenticated session                    |
+| `get_session_status` | Check if the current user is logged in                            |
+| `logout`             | Log out and clear session                                         |
+
+### Cart (2 tools)
+
+| Tool          | Description                                                       |
+| ------------- | ----------------------------------------------------------------- |
+| `add_to_cart` | Add product to cart by slug (supports size selection and quantity) |
+| `get_cart`    | View cart contents, items, and price breakup                      |
+
+### Coupons (3 tools)
+
+| Tool            | Description                                |
+| --------------- | ------------------------------------------ |
+| `list_coupons`  | List available coupons for the current cart |
+| `apply_coupon`  | Apply a coupon code to the cart             |
+| `remove_coupon` | Remove applied coupon from the cart         |
+
+### Address & Checkout (3 tools)
+
+| Tool             | Description                                                                             |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `list_addresses` | List saved delivery addresses                                                           |
+| `add_address`    | Add a new delivery address (with 6-digit pincode validation)                            |
+| `place_order`    | Preview order with cart summary, totals, and COD eligibility (returns confirmation code) |
+
+### Order Management (4 tools)
+
+| Tool               | Description                                                                    |
+| ------------------ | ------------------------------------------------------------------------------ |
+| `confirm_order`    | Confirm and place the COD order using the confirmation code from `place_order` |
+| `get_order_status` | Get order details, status, shipments, and timestamps                           |
+| `cancel_order`     | Cancel an order (requires explicit "yes" confirmation)                         |
+| `list_orders`      | List all orders with pagination                                                |
+
+---
+
+## Key Behaviors
+
+- **Two-step order confirmation:** `place_order` returns a preview with a confirmation code (valid 10 minutes). Use `confirm_order` to finalize. This ensures users see totals and COD eligibility before committing.
+- **OTP rate limiting:** Max 3 OTP sends per mobile number per 15-minute window. You'll get a retry-after duration if rate limited.
+- **Session persistence:** Sessions last 24 hours and persist across client reconnections.
+- **Image support:** Product and collection images are automatically included in responses.
+
+---
+
+## Client Setup
+
+> **Note:** `http://localhost:9090` is used as a placeholder throughout these examples. Replace it with the URL of any live Fynd Commerce storefront — for example, `https://superdry.in`, `https://nexus247.in`, or any other Fynd-powered website. Each storefront has its own application ID and token; generate the Bearer token accordingly.
+
+### Generating the Bearer Token
+
+The `Authorization` header uses a Base64-encoded combination of your application ID and token:
+
+```
+Bearer base64(APPLICATION_ID:APPLICATION_TOKEN)
 ```
 
-<details>
-<summary>Other languages</summary>
+**Examples:**
 
-**Node.js:**
+```bash
+# Using command line
+echo -n "YOUR_APP_ID:YOUR_APP_TOKEN" | base64
 
-```js
+# Example
+echo -n "YOUR_APP_ID:YOUR_APP_TOKEN" | base64
+# Output: YOUR_BASE64_TOKEN
+```
+
+```javascript
+// In Node.js
 Buffer.from("YOUR_APP_ID:YOUR_APP_TOKEN").toString("base64");
 ```
 
-**Python:**
-
 ```python
+# In Python
 import base64
 base64.b64encode(b"YOUR_APP_ID:YOUR_APP_TOKEN").decode()
 ```
 
-</details>
+The resulting header value: `Authorization: Bearer YOUR_BASE64_TOKEN`
 
-For more details, see the [authentication reference](https://docs.fynd.com/partners/commerce/sdk/latest/graphql/application/client-libraries#authentication).
+### Cursor
 
-### 2. Connect Your MCP Client
-
-Pick your client and add the config. Replace `{mcp_server_domain}` with your storefront domain and `YOUR_BASE64_TOKEN` with the token from step 1.
-
-<details>
-<summary><strong>Cursor</strong></summary>
-
-Add to `.cursor/mcp.json` (project-level) or `~/.cursor/mcp.json` (global):
+Add to `.cursor/mcp.json` in your project root (or `~/.cursor/mcp.json` globally):
 
 ```json
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "https://{mcp_server_domain}/api/mcp",
+      "url": "http://localhost:9090/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -54,21 +122,15 @@ Add to `.cursor/mcp.json` (project-level) or `~/.cursor/mcp.json` (global):
 }
 ```
 
-</details>
+### Claude Desktop
 
-<details>
-<summary><strong>Claude Desktop</strong></summary>
-
-Add to the config file:
-
-- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "https://{mcp_server_domain}/api/mcp",
+      "url": "http://localhost:9090/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -77,15 +139,14 @@ Add to the config file:
 }
 ```
 
-</details>
+### Claude Code (CLI)
 
-<details>
-<summary><strong>Claude Code (CLI)</strong></summary>
+Run the following command to add the MCP server:
 
 ```bash
 claude mcp add fynd-commerce \
   --transport http \
-  --url "https://{mcp_server_domain}/api/mcp" \
+  --url http://localhost:9090/api/mcp \
   --header "Authorization: Bearer YOUR_BASE64_TOKEN"
 ```
 
@@ -95,7 +156,7 @@ Or add manually to `~/.claude/settings.json`:
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "https://{mcp_server_domain}/api/mcp",
+      "url": "http://localhost:9090/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -104,18 +165,15 @@ Or add manually to `~/.claude/settings.json`:
 }
 ```
 
-</details>
+### Antigravity
 
-<details>
-<summary><strong>Antigravity</strong></summary>
-
-Add in workspace settings:
+In your Antigravity workspace settings, add the MCP server:
 
 ```json
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "https://{mcp_server_domain}/api/mcp",
+      "url": "http://localhost:9090/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -124,134 +182,65 @@ Add in workspace settings:
 }
 ```
 
-</details>
+### Custom / Any MCP-Compatible Client
 
-### 3. Start Talking to Your Storefront
+The server uses **MCP Streamable HTTP** transport. Any MCP-compatible client can connect using:
 
-Once connected, try these example prompts:
+- **URL:** `http://localhost:9090/api/mcp`
+- **Method:** `POST` to initialize and send requests, `GET` for SSE stream, `DELETE` to close session
+- **Required header:**
+  - `Authorization: Bearer <base64(APP_ID:APP_TOKEN)>`
+- **Optional headers:**
+  - `mcp-session-id` — session ID returned from the initial POST
 
-#### Browse & Discover
+**Example using `curl`:**
 
-> "Show me the latest sneakers under 5000 rupees"
+```bash
+# Initialize session
+curl -X POST http://localhost:9090/api/mcp \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_BASE64_TOKEN" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"custom","version":"1.0.0"}}}'
+```
 
-> "What collections are available on the store?"
+### Deployed / Live Storefronts
 
-> "Show me details of collection summer-sale with its products"
+Replace `http://localhost:9090` with any live Fynd Commerce storefront URL and use the corresponding application credentials:
 
-> "Sort t-shirts by popularity"
+```json
+{
+  "mcpServers": {
+    "superdry": {
+      "url": "https://superdry.in/api/mcp",
+      "headers": {
+        "Authorization": "Bearer <base64(SUPERDRY_APP_ID:SUPERDRY_APP_TOKEN)>"
+      }
+    },
+    "nexus247": {
+      "url": "https://nexus247.in/api/mcp",
+      "headers": {
+        "Authorization": "Bearer <base64(NEXUS247_APP_ID:NEXUS247_APP_TOKEN)>"
+      }
+    }
+  }
+}
+```
 
-#### Login & Session
+You can configure multiple storefronts simultaneously — each with its own credentials and Bearer token.
 
-> "Log me in with mobile number 9876543210"
-
-> "Verify OTP 1234"
-
-> "Am I logged in?"
-
-#### Cart & Coupons
-
-> "Add the Nike Air Max in size 9 to my cart"
-
-> "Show me my cart"
-
-> "What coupons are available?"
-
-> "Apply coupon SAVE20 to my cart"
-
-#### Checkout & Orders (COD)
-
-> "Show my saved addresses"
-
-> "Add a new address: 42 MG Road, Bengaluru, Karnataka, 560001"
-
-> "Place my order"
-
-> "Confirm my order with code ABC123"
-
-> "What's the status of my last order?"
-
-> "Show me all my past orders"
-
-#### Full Shopping Flow
-
-> "Search for wireless headphones, add the best-rated one to cart, apply any available coupon, and place a COD order to my saved address"
+> **Security note:** Avoid committing credentials in config files. Use environment variables or restrict file permissions with `chmod 600`.
 
 ---
 
-## Available Tools (20)
+## Tool Flow
 
-### Catalog (4)
-
-| Tool | Description |
-|------|-------------|
-| `list_products` | Search products with filters — query, price, stock, sort, pagination |
-| `get_product` | Get detailed product info — prices, media, sizes |
-| `list_collections` | Browse product collections |
-| `get_collection` | Get collection details and its products |
-
-**Supported sort options:** `latest`, `price_asc`, `price_dsc`, `popularity`, `discount_dsc`, `rating_dsc`
-
-### Authentication (4)
-
-| Tool | Description |
-|------|-------------|
-| `send_login_otp` | Send OTP to mobile (3 per mobile / 15 min rate limit) |
-| `verify_login_otp` | Verify the received OTP |
-| `get_session_status` | Check current session status |
-| `logout` | End current session |
-
-- Redis-backed sessions with 24h TTL
-- AsyncLocalStorage-based per-request isolation
-
-### Cart (2)
-
-| Tool | Description |
-|------|-------------|
-| `add_to_cart` | Add item to cart with size and quantity |
-| `get_cart` | View current cart contents |
-
-### Coupons (3)
-
-| Tool | Description |
-|------|-------------|
-| `list_coupons` | List available coupons |
-| `apply_coupon` | Apply a coupon to the cart |
-| `remove_coupon` | Remove applied coupon |
-
-### Address & Checkout (3)
-
-| Tool | Description |
-|------|-------------|
-| `list_addresses` | List saved addresses |
-| `add_address` | Add a new address (6-digit pincode validation) |
-| `place_order` | Preview order with a 10-minute confirmation code |
-
-### Order Management (4)
-
-| Tool | Description |
-|------|-------------|
-| `confirm_order` | Finalize COD order using confirmation code |
-| `get_order_status` | Check status of an order |
-| `cancel_order` | Cancel an order (explicit "yes" required) |
-| `list_orders` | List past orders |
-
-## Two-Step Order Confirmation
-
-Orders follow a secure **preview → confirm** flow:
-
-1. `place_order` — returns an order summary and a confirmation code (valid for 10 minutes)
-2. `confirm_order` — finalizes COD placement using the confirmation code
-
-> **Note:** COD orders cannot be cancelled after confirmation.
-
-## Security & Reliability
-
-- Bearer token authentication
-- Zod schema validation on all inputs
-- OTP rate limiting with retry-after support
-- Image auto-base64 encoding (JPEG/PNG/WebP, 5s timeout)
+1. `send_login_otp` → `verify_login_otp` (login)
+2. `list_products` / `get_product` → `add_to_cart`
+3. `list_coupons` → `apply_coupon` (optional discounts)
+4. `add_address` → `place_order` → show total → user confirms → `confirm_order`
+5. `get_order_status` / `list_orders` → `cancel_order` (if needed)
 
 ## Limitations
 
-- Supports **COD (Cash on Delivery) orders only**
-- Currently supports **Indian sales channels**
+- COD only
+- Single sales channel per deployment
