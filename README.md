@@ -71,7 +71,7 @@ A Model Context Protocol (MCP) server for the Fynd Commerce platform, enabling A
 
 ## Client Setup
 
-> **Note:** `http://localhost:9090` is used as a placeholder throughout these examples. Replace it with the URL of any live Fynd Commerce storefront — for example, `https://superdry.in`, `https://nexus247.in`, or any other Fynd-powered website. Each storefront has its own application ID and token; generate the Bearer token accordingly.
+> **Note:** `https://{website_domain}` is used as a placeholder throughout these examples. Replace it with the URL of any live Fynd Commerce storefront — for example, `https://superdry.in`, `https://nexus247.in`, or any other Fynd-powered website. Each storefront has its own application ID and token; generate the Bearer token accordingly.
 
 ### Generating the Bearer Token
 
@@ -113,7 +113,7 @@ Add to `.cursor/mcp.json` in your project root (or `~/.cursor/mcp.json` globally
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "http://localhost:9090/api/mcp",
+      "url": "https://{website_domain}/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -130,7 +130,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "http://localhost:9090/api/mcp",
+      "url": "https://{website_domain}/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -146,7 +146,7 @@ Run the following command to add the MCP server:
 ```bash
 claude mcp add fynd-commerce \
   --transport http \
-  --url http://localhost:9090/api/mcp \
+  --url https://{website_domain}/api/mcp \
   --header "Authorization: Bearer YOUR_BASE64_TOKEN"
 ```
 
@@ -156,7 +156,7 @@ Or add manually to `~/.claude/settings.json`:
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "http://localhost:9090/api/mcp",
+      "url": "https://{website_domain}/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -173,7 +173,7 @@ In your Antigravity workspace settings, add the MCP server:
 {
   "mcpServers": {
     "fynd-commerce": {
-      "url": "http://localhost:9090/api/mcp",
+      "url": "https://{website_domain}/api/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_BASE64_TOKEN"
       }
@@ -186,7 +186,7 @@ In your Antigravity workspace settings, add the MCP server:
 
 The server uses **MCP Streamable HTTP** transport. Any MCP-compatible client can connect using:
 
-- **URL:** `http://localhost:9090/api/mcp`
+- **URL:** `https://{website_domain}/api/mcp`
 - **Method:** `POST` to initialize and send requests, `GET` for SSE stream, `DELETE` to close session
 - **Required header:**
   - `Authorization: Bearer <base64(APP_ID:APP_TOKEN)>`
@@ -197,7 +197,7 @@ The server uses **MCP Streamable HTTP** transport. Any MCP-compatible client can
 
 ```bash
 # Initialize session
-curl -X POST http://localhost:9090/api/mcp \
+curl -X POST https://{website_domain}/api/mcp \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_BASE64_TOKEN" \
   -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"custom","version":"1.0.0"}}}'
@@ -205,7 +205,7 @@ curl -X POST http://localhost:9090/api/mcp \
 
 ### Deployed / Live Storefronts
 
-Replace `http://localhost:9090` with any live Fynd Commerce storefront URL and use the corresponding application credentials:
+Replace `https://{website_domain}` with any live Fynd Commerce storefront URL and use the corresponding application credentials:
 
 ```json
 {
@@ -243,4 +243,3 @@ You can configure multiple storefronts simultaneously — each with its own cred
 ## Limitations
 
 - COD only
-- Single sales channel per deployment
