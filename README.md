@@ -8,6 +8,7 @@ A Model Context Protocol (MCP) server for the Fynd Commerce platform, enabling A
 
 ### Catalog (4 tools)
 
+
 | Tool               | Description                                                                         |
 | ------------------ | ----------------------------------------------------------------------------------- |
 | `list_products`    | Search and list products with filters (query, price range, sort, stock, pagination) |
@@ -15,9 +16,11 @@ A Model Context Protocol (MCP) server for the Fynd Commerce platform, enabling A
 | `list_collections` | Browse product collections with pagination                                          |
 | `get_collection`   | Get collection details and its products                                             |
 
+
 **Sort options:** latest, price_asc, price_dsc, popularity, discount_dsc, rating_dsc
 
 ### Authentication (4 tools)
+
 
 | Tool                 | Description                                                       |
 | -------------------- | ----------------------------------------------------------------- |
@@ -26,30 +29,38 @@ A Model Context Protocol (MCP) server for the Fynd Commerce platform, enabling A
 | `get_session_status` | Check if the current user is logged in                            |
 | `logout`             | Log out and clear session                                         |
 
+
 ### Cart (2 tools)
 
-| Tool          | Description                                                       |
-| ------------- | ----------------------------------------------------------------- |
+
+| Tool          | Description                                                        |
+| ------------- | ------------------------------------------------------------------ |
 | `add_to_cart` | Add product to cart by slug (supports size selection and quantity) |
-| `get_cart`    | View cart contents, items, and price breakup                      |
+| `get_cart`    | View cart contents, items, and price breakup                       |
+
 
 ### Coupons (3 tools)
 
-| Tool            | Description                                |
-| --------------- | ------------------------------------------ |
+
+| Tool            | Description                                 |
+| --------------- | ------------------------------------------- |
 | `list_coupons`  | List available coupons for the current cart |
 | `apply_coupon`  | Apply a coupon code to the cart             |
 | `remove_coupon` | Remove applied coupon from the cart         |
 
+
 ### Address & Checkout (3 tools)
 
-| Tool             | Description                                                                             |
-| ---------------- | --------------------------------------------------------------------------------------- |
-| `list_addresses` | List saved delivery addresses                                                           |
-| `add_address`    | Add a new delivery address (with 6-digit pincode validation)                            |
+
+| Tool             | Description                                                                              |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| `list_addresses` | List saved delivery addresses                                                            |
+| `add_address`    | Add a new delivery address (with 6-digit pincode validation)                             |
 | `place_order`    | Preview order with cart summary, totals, and COD eligibility (returns confirmation code) |
 
+
 ### Order Management (4 tools)
+
 
 | Tool               | Description                                                                    |
 | ------------------ | ------------------------------------------------------------------------------ |
@@ -57,6 +68,7 @@ A Model Context Protocol (MCP) server for the Fynd Commerce platform, enabling A
 | `get_order_status` | Get order details, status, shipments, and timestamps                           |
 | `cancel_order`     | Cancel an order (requires explicit "yes" confirmation)                         |
 | `list_orders`      | List all orders with pagination                                                |
+
 
 ---
 
@@ -108,23 +120,6 @@ The resulting header value: `Authorization: Bearer YOUR_BASE64_TOKEN`
 ### Cursor
 
 Add to `.cursor/mcp.json` in your project root (or `~/.cursor/mcp.json` globally):
-
-```json
-{
-  "mcpServers": {
-    "fynd-commerce": {
-      "url": "https://{website_domain}/api/mcp",
-      "headers": {
-        "Authorization": "Bearer YOUR_BASE64_TOKEN"
-      }
-    }
-  }
-}
-```
-
-### Claude Desktop
-
-Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
 
 ```json
 {
@@ -243,3 +238,4 @@ You can configure multiple storefronts simultaneously — each with its own cred
 ## Limitations
 
 - COD only
+
